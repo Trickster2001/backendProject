@@ -16,6 +16,7 @@ const uploadOnCloudinary = async (localFilePath) => {
       resource_type: "auto"
     })
     // file has been uploaded successfully
+    console.log("response is", response);
     console.log("File uploaded on cloudinary", response.url);
     fs.unlinkSync(localFilePath)
     return response;
@@ -25,4 +26,15 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 }
 
-export {uploadOnCloudinary};
+const deleteOnClodinary = async(publicId) => {
+  try {
+    if(!publicId) return null;
+    const response = await cloudinary.uploader.destroy(publicId);
+    return response;
+  } catch (error) {
+    console.log("not able to delete avatar")
+    return null;
+  }
+}
+
+export {uploadOnCloudinary, deleteOnClodinary};

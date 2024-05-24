@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { deleteOnClodinary, uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 
@@ -72,6 +72,7 @@ const registerUser = asyncHandler(async (req, res) => {
     fullName,
     avatar: avatar.url,
     coverImage: coverImage?.url || "",
+    avatarPublicId: avatar.public_id,
     email,
     password,
     username: username.toLowerCase()
@@ -275,10 +276,16 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
     throw new ApiError(400, "Error while uploading on avatar")
   }
 
+  const oldAvatar = User.findById(req.user?._id).select("-password");
+  console.log("oldAvatar is", oldAvatar);
+
+  await deleteOnClodinary(oldAvatar.public_id)
+
   const user = await User.findByIdAndUpdate(req.user?._id,
     {
       $set: {
-        avatar: avatar.url
+        avatar: avatar.url,
+        avatarPublicId: avatar.public_id
       }
     },
     {new: true}
